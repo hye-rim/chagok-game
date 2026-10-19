@@ -24,12 +24,17 @@
     { name: '차곡차곡 대장', items: ['pancake', 'strawberry', 'pancake', 'egg', 'lettuce', 'patty', 'cheese', 'bread'] },
   ];
   const BEST_KEY = 'chagokBest';
+  const START_TIME = 45;
+  const MAX_TIME = 60;
+  const BOMB_TIME = 5;
+  const BOMB_COUNT = 2;
   const store = {
     get(key) { try { return localStorage.getItem(key); } catch (_) { return null; } },
     set(key, value) { try { localStorage.setItem(key, String(value)); } catch (_) {} },
   };
   let best = Number(store.get(BEST_KEY)) || 0;
   let level = 0, mistakes = 0, score = 0, combo = 0, placed = [], state = 'title', muted = store.get('chagokMuted') === '1';
+  let timeLeft = START_TIME, bombs = BOMB_COUNT, lastCorrectAt = 0, lastShownTime = -1;
   let audio;
 
   function tone(freq, duration = .08, type = 'triangle') {
@@ -44,6 +49,8 @@
   }
   const cheer = () => [523, 659, 784].forEach((f, i) => setTimeout(() => tone(f, .12), i * 70));
 
+  // 받침이 있으면 '은', 없으면 '는'
+  const eunNeun = (word) => { const c = word.charCodeAt(word.length - 1) - 0xAC00; return `${word}${c >= 0 && c % 28 !== 0 ? '은' : '는'}`; };
   function current() { return recipes[level]; }
   function makeLayer(food) {
     const el = document.createElement('div');
@@ -54,6 +61,8 @@
   }
   function drawTowers() {
     const target = $('targetStack'), player = $('playerStack');
+    target.style.setProperty('--stack-count', current().items.length);
+    player.style.setProperty('--stack-count', Math.max(1, current().items.length));
     target.replaceChildren(); player.replaceChildren();
     current().items.forEach((id, i) => {
       target.append(makeLayer(byId[id]));
@@ -65,7 +74,14 @@
     $('score').textContent = score.toLocaleString();
     $('best').textContent = best.toLocaleString();
     $('mistakes').textContent = `${mistakes}/3`;
-    $('prompt').innerHTML = placed.length === 0 ? `첫 재료를 골라요! <b>${current().name}</b>` : `다음 재료를 찾아요 · <b>${current().name}</b>`;
+    $('prompt').innerHTML = placed.length === 0 ? `첫 재료부터! <b>${current().name}</b>` : `다음 재료 · <b>${current().name}</b>`;
+    $('bombs').textContent = `×${bombs}`;
+    $('bombBtn').disabled = state !== 'play' || bombs <= 0 || timeLeft >= MAX_TIME;
+    if (lastShownTime !== Math.ceil(timeLeft * 10)) {
+      lastShownTime = Math.ceil(timeLeft * 10);
+      $('time').textContent = Math.max(0, timeLeft).toFixed(1);
+      $('timePill').classList.toggle('urgent', timeLeft <= 10);
+    }
   }
   function makePantry() {
     const required = new Set(current().items);
@@ -87,6 +103,7 @@
   function hideOverlay() { $('overlay').classList.add('hidden'); }
   function begin() {
     level = 0; mistakes = 0; score = 0; combo = 0; placed = []; state = 'play';
+    timeLeft = START_TIME; bombs = BOMB_COUNT; lastCorrectAt = 0; lastShownTime = -1;
     render(); hideOverlay(); $('feedback').textContent = '그림은 아래층부터 쌓여 있어요!';
   }
   function choose(id, button) {
@@ -94,35 +111,60 @@
     const expected = current().items[placed.length];
     if (id !== expected) {
       mistakes++; combo = 0; tone(180, .12, 'square');
+      timeLeft = Math.max(0, timeLeft - 2);
       $('mistakes').textContent = `${mistakes}/3`;
-      $('feedback').textContent = `앗, ${byId[id].name}은(는) 아니에요. 그림의 맨 아래부터 확인!`;
+      $('feedback').textContent = `앗, ${eunNeun(byId[id].name)} 아니에요. 2초 줄었어요!`;
       button.animate([{ transform: 'translateX(-5px)' }, { transform: 'translateX(5px)' }, { transform: 'translateX(0)' }], { duration: 220 });
-      if (mistakes >= 3) finish(false);
+      updateClock();
+      if (mistakes >= 3) finish(false, 'mistake');
+      else if (timeLeft <= 0) finish(false, 'time');
       return;
     }
-    placed.push(id); combo++;
-    const gain = 100 + Math.min(combo - 1, 5) * 25;
+    const now = performance.now();
+    combo = now - lastCorrectAt <= 1050 ? combo + 1 : 1;
+    lastCorrectAt = now;
+    placed.push(id);
+    const gain = 100 + Math.min(combo - 1, 5) * 30;
     score += gain; if (score > best) { best = score; store.set(BEST_KEY, best); }
     tone(440 + placed.length * 55);
-    $('feedback').textContent = `착착! +${gain}점${combo > 1 ? ` · ${combo}연속` : ''}`;
+    $('feedback').textContent = `${combo >= 5 ? '🔥 빠른 손! ' : '착착! '}+${gain}점${combo > 1 ? ` · ${combo}연속` : ''}`;
     drawTowers();
     if (placed.length === current().items.length) {
       score += 250; if (score > best) { best = score; store.set(BEST_KEY, best); }
+      timeLeft = Math.min(MAX_TIME, timeLeft + 4);
       state = 'between'; cheer();
-      $('feedback').textContent = `완성! 보너스 +250점`;
+      updateClock();
+      $('feedback').textContent = `완성! +250점 · 시간 보너스 +4초`;
       setTimeout(() => {
         if (state !== 'between') return;
         if (level === recipes.length - 1) finish(true);
         else {
           level++; placed = []; state = 'play'; render(); $('feedback').textContent = `${current().name} 도전! 더 길어졌어요.`;
         }
-      }, 850);
+      }, 420);
     }
   }
-  function finish(won) {
+  function updateClock(force = false) {
+    const shown = Math.ceil(timeLeft * 10);
+    if (force || shown !== lastShownTime) {
+      lastShownTime = shown;
+      $('time').textContent = Math.max(0, timeLeft).toFixed(1);
+      $('timePill').classList.toggle('urgent', timeLeft <= 10);
+    }
+    $('bombBtn').disabled = state !== 'play' || bombs <= 0 || timeLeft >= MAX_TIME;
+  }
+  function useBomb() {
+    if (state !== 'play' || bombs <= 0 || timeLeft >= MAX_TIME) return;
+    bombs--;
+    timeLeft = Math.min(MAX_TIME, timeLeft + BOMB_TIME);
+    tone(220, .2, 'sawtooth');
+    $('feedback').textContent = `💣 시간 폭탄! +${BOMB_TIME}초`;
+    drawTowers(); updateClock();
+  }
+  function finish(won, reason = 'mistake') {
     state = won ? 'won' : 'over';
     if (score > best) { best = score; store.set(BEST_KEY, best); }
-    showOverlay(`<div class="sticker">${won ? '🏆🍔' : '🥺🧺'}</div><h2>${won ? '차곡차곡 완성!' : '재료가 헷갈렸어요!'}</h2><p>${won ? '10가지 음식 탑을 모두 완성했어요.' : `${level + 1}단계에서 멈췄어요. 그림을 아래부터 다시 살펴봐요.`}</p><p>점수 <b>${score.toLocaleString()}</b>점 · 최고 ${best.toLocaleString()}점</p><button class="primary" id="again">${won ? '한 번 더 쌓기' : '다시 도전'}</button>`);
+    showOverlay(`<div class="sticker">${won ? '🏆🍔' : reason === 'time' ? '⏰🍽️' : '🥺🧺'}</div><h2>${won ? '차곡차곡 완성!' : reason === 'time' ? '시간이 다 됐어요!' : '재료가 헷갈렸어요!'}</h2><p>${won ? '10가지 음식 탑을 모두 완성했어요.' : `${level + 1}단계에서 멈췄어요. ${reason === 'time' ? '폭탄을 아껴 쓰고 더 빠르게 쌓아봐요.' : '그림을 아래부터 다시 살펴봐요.'}`}</p><p>점수 <b>${score.toLocaleString()}</b>점 · 최고 ${best.toLocaleString()}점</p><button class="primary" id="again">${won ? '한 번 더 쌓기' : '다시 도전'}</button>`);
     $('again').onclick = begin;
   }
   function pause() {
@@ -133,8 +175,20 @@
     } else if (state === 'paused') { state = 'play'; hideOverlay(); }
   }
   $('pause').addEventListener('click', pause);
+  $('bombBtn').addEventListener('click', useBomb);
   window.addEventListener('keydown', (e) => { if (e.key.toLowerCase() === 'p' || e.key === 'Escape') pause(); });
   window.addEventListener('storage', (e) => { if (e.key === 'arcade_muted') muted = e.newValue === '1'; });
-  showOverlay('<div class="sticker">🥞🍓🍔</div><h2>막내의 차곡차곡</h2><p>완성 그림을 보고 <b>접시 맨 아래 재료부터</b> 골라 쌓아요.<br>틀린 재료를 세 번 고르면 게임이 끝나요.<br>10단계 음식 탑에 도전해 보세요!</p><button class="primary" id="start">쌓기 시작</button><p class="small">그림의 아래쪽이 첫 번째 재료예요</p>');
+  showOverlay('<div class="sticker">🥞🍓🍔</div><h2>막내의 차곡차곡</h2><p>완성 그림을 보고 <b>접시 맨 아래부터 빠르게</b> 쌓아요.<br>45초 안에 도전! 정답 콤보와 단계 완성은 점수·시간 보너스.<br>💣 폭탄은 5초 연장, 오답은 2초 차감.<br>10단계 음식 탑에 도전해 보세요!</p><button class="primary" id="start">쌓기 시작</button><p class="small">원작처럼 목표 그림을 보며 빠른 손으로 완성해요</p>');
   $('start').onclick = begin;
+  let clockAt = performance.now();
+  function tick(now) {
+    const dt = Math.min(.1, (now - clockAt) / 1000); clockAt = now;
+    if (state === 'play') {
+      timeLeft = Math.max(0, timeLeft - dt);
+      if (timeLeft <= 0) { updateClock(true); finish(false, 'time'); }
+      else updateClock();
+    }
+    requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
 })();
