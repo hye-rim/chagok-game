@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#f7b94e">
+<title>막내의 차곡차곡</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jua&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#382747;--paper:#fff9ec;--yellow:#ffd95a;--pink:#ff7795;--muted:#82748d;--orange:#f7b94e}*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}html,body{margin:0;min-height:100%;font-family:'Jua',-apple-system,'Apple SD Gothic Neo',sans-serif;color:var(--ink)}body{min-height:100dvh;background:radial-gradient(ellipse at 50% 0,#ffe7a8 0,#ffd184 38%,#f29b70 100%);padding:12px;display:grid;place-items:center}button{font:inherit;color:inherit;cursor:pointer}#app{width:min(100%,520px)}.hud{display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:7px;margin-bottom:12px}.pill{min-width:0;height:40px;display:flex;align-items:center;justify-content:center;gap:6px;border:3px solid var(--ink);border-radius:99px;background:#fff;box-shadow:0 4px 0 var(--ink);font-variant-numeric:tabular-nums}.pill:first-child{background:var(--yellow)}.pill span{font-size:11px;color:var(--muted)}.pill strong{font-size:19px;font-weight:400}.icon{width:40px;height:40px;border:3px solid var(--ink);border-radius:13px;background:#fff;box-shadow:0 4px 0 var(--ink);font-size:17px}.icon:active,.food:active,.primary:active{transform:translateY(3px);box-shadow:0 1px 0 var(--ink)}.card{position:relative;background:var(--paper);border:4px solid var(--ink);border-radius:24px;box-shadow:0 8px 0 var(--ink),0 16px 24px #78433333;padding:18px;overflow:hidden}.heading{display:flex;justify-content:space-between;align-items:center;color:var(--muted);font-size:14px}.level{padding:4px 12px;border:2px solid var(--ink);border-radius:99px;background:#eaf5ff;color:var(--ink)}h1{margin:8px 0 2px;font-size:clamp(27px,7vw,35px);font-weight:400;letter-spacing:-1px}.subtitle{font-size:14px;color:var(--muted);line-height:1.4}.workbench{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}.tower-panel{min-height:230px;border:3px dashed #d8bf9c;border-radius:18px;background:#fffdf6;padding:10px;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;position:relative}.panel-title{position:absolute;top:8px;left:10px;right:10px;text-align:center;font-size:13px;color:var(--muted)}.stack{display:flex;flex-direction:column-reverse;align-items:center;justify-content:flex-start;width:100%;min-height:166px;padding-top:26px}.layer{height:34px;min-width:74px;width:72%;display:grid;place-items:center;font-size:27px;line-height:1;border:2px solid var(--ink);border-radius:12px 12px 9px 9px;background:#fff;box-shadow:0 3px 0 var(--ink);margin-top:-2px;animation:drop .2s cubic-bezier(.2,.8,.3,1.3)}.layer:nth-child(3n+1){transform:rotate(-2deg)}.layer:nth-child(3n+2){transform:rotate(2deg)}@keyframes drop{from{opacity:.3;transform:translateY(-18px) scale(.82)}to{opacity:1}}.plate{height:14px;width:82%;border:3px solid var(--ink);border-radius:50%;background:#f6d775;box-shadow:0 4px 0 var(--ink);margin:0 auto 4px}.target .stack{min-height:166px}.target .layer{background:#f1e8d7;border-style:dashed;border-color:#ac997e;box-shadow:none}.target .layer span{filter:grayscale(1);opacity:.88}.target .layer.hide-item span{opacity:0}.target .layer.hide-item:after{content:'?';position:absolute;color:#a18a71;font-size:21px}.target-name{font-size:12px;color:#a18a71;margin:5px 0 0}.callout{margin:11px 0 8px;text-align:center;font-size:16px;color:#7e5c3a;min-height:22px}.callout b{color:#db5676;font-weight:400}.pantry{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.food{position:relative;min-height:74px;border:3px solid var(--ink);border-radius:16px;background:white;box-shadow:0 4px 0 var(--ink);font-size:31px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;transition:transform .12s,opacity .12s}.food small{font-size:11px;color:var(--muted)}.food.used{opacity:.35;filter:grayscale(1);pointer-events:none}.food.selected{background:var(--yellow);transform:translateY(-3px);box-shadow:0 7px 0 var(--ink)}.feedback{height:24px;text-align:center;padding-top:5px;color:#be5672;font-size:14px}.progress{height:10px;border:2px solid var(--ink);border-radius:99px;background:#fff;overflow:hidden;margin-top:9px}.progress i{display:block;height:100%;width:0;background:linear-gradient(90deg,#ff8295,#ffd95a);transition:width .2s}.footnote{text-align:center;color:#806c72;font-size:12px;margin-top:8px}.overlay{position:absolute;inset:0;z-index:3;display:grid;place-items:center;padding:18px;background:#382747bb;backdrop-filter:blur(4px);border-radius:20px}.overlay.hidden{display:none}.modal{width:min(100%,380px);padding:22px 18px;text-align:center;background:var(--paper);border:4px solid var(--ink);border-radius:24px;box-shadow:0 7px 0 var(--ink)}.sticker{font-size:50px}.modal h2{font-size:30px;font-weight:400;margin:7px 0}.modal p{font-size:15px;line-height:1.55;color:var(--muted);margin:6px 0}.modal b{color:#de5877;font-weight:400}.primary{margin-top:13px;min-height:50px;padding:8px 30px;border:3px solid var(--ink);border-radius:99px;background:var(--yellow);box-shadow:0 5px 0 var(--ink);font-size:21px}.secondary{margin:11px 7px 0;padding:6px 15px;background:white;border:2px solid var(--ink);border-radius:99px;font-size:15px}@media(max-width:380px){body{padding:8px}.card{padding:13px}.workbench{gap:7px}.tower-panel{min-height:206px;padding:7px}.stack,.target .stack{min-height:150px}.layer{height:31px;font-size:24px}.food{min-height:66px;font-size:27px}.hud{gap:4px}.pill{height:36px}.icon{height:36px;width:36px}}@media(max-height:720px){body{padding:7px}.card{padding:12px}.workbench{margin-top:9px}.tower-panel{min-height:186px}.stack,.target .stack{min-height:130px}.layer{height:28px}.callout{margin:7px 0 5px}.food{min-height:62px}.footnote{margin-top:5px}}
+</style>
+</head>
+<body>
+<main id="app">
+  <header class="hud" aria-label="게임 정보">
+    <div class="pill"><span>점수</span><strong id="score">0</strong></div>
+    <div class="pill"><span>최고</span><strong id="best">0</strong></div>
+    <div class="pill"><span>실수</span><strong id="mistakes">0/3</strong></div>
+    <button class="icon" id="pause" aria-label="일시정지" title="일시정지">Ⅱ</button>
+  </header>
+  <section class="card" aria-label="차곡차곡 음식 쌓기">
+    <div class="heading"><span>막내의 주방</span><span class="level">단계 <b id="level">1</b> / 10</span></div>
+    <h1>차곡차곡</h1>
+    <p class="subtitle">그림을 보고 아래부터 똑같이 쌓아요. 순서가 틀리면 실수!</p>
+    <div class="workbench">
+      <section class="tower-panel target" aria-label="완성할 음식 탑">
+        <div class="panel-title">👀 완성 그림</div><div class="stack" id="targetStack"></div><div class="plate"></div>
+      </section>
+      <section class="tower-panel" aria-label="내가 쌓는 음식 탑">
+        <div class="panel-title">🍽️ 내 탑 <span id="stackCount">0/3</span></div><div class="stack" id="playerStack"></div><div class="plate"></div>
+      </section>
+    </div>
+    <div class="callout" id="prompt" aria-live="polite">첫 재료를 골라요!</div>
+    <div class="pantry" id="pantry" role="group" aria-label="재료 바구니"></div>
+    <div class="feedback" id="feedback" aria-live="polite"></div>
+    <div class="progress" aria-label="현재 단계 진행"><i id="progress"></i></div>
+    <div class="footnote">아래층부터 완성 그림과 똑같이 쌓아 보세요</div>
+    <section class="overlay" id="overlay" aria-modal="true" role="dialog"><div class="modal" id="modal"></div></section>
+  </section>
+</main>
+<script src="game.js"></script>
+</body>
+</html>
