@@ -130,6 +130,10 @@
   $('pause').addEventListener('click', pause);
   $('bombBtn').addEventListener('click', useBomb);
   window.addEventListener('keydown', (e) => { if (e.key.toLowerCase() === 'p' || e.key === 'Escape') pause(); });
+  // 창이 가려지거나 다른 앱으로 가면 저절로 멈춘다 (이미 멈춰 있으면 건드리지 않는다)
+  const autoPause = () => { if (ui === 'play' && st.state === 'play') pause(); };
+  document.addEventListener('visibilitychange', () => { if (document.hidden) autoPause(); });
+  window.addEventListener('blur', autoPause);
   window.addEventListener('storage', (e) => { if (e.key === 'arcade_muted') muted = e.newValue === '1'; });
   showOverlay('<div class="sticker">🥞🍓🍔</div><h2>막내의 차곡차곡</h2><p>완성 그림을 보고 <b>접시 맨 아래부터 빠르게</b> 쌓아요.<br>45초 안에 도전! 정답 콤보와 단계 완성은 점수·시간 보너스.<br>💣 폭탄은 5초 연장, 오답은 2초 차감.<br>10단계 음식 탑에 도전해 보세요!</p><button class="primary" id="start">쌓기 시작</button><p class="small">원작처럼 목표 그림을 보며 빠른 손으로 완성해요</p>');
   $('start').onclick = begin;
